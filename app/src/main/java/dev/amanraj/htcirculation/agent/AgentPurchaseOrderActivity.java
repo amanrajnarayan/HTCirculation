@@ -167,17 +167,18 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+        String orderId = agentCode+"_"+publication;
         DocumentReference orderRef = db
                 .collection("purchase_orders")
                 .document(orderDate)
                 .collection("orders")
-                .document(agentCode);
+                .document(orderId);
 
         orderRef.get().addOnSuccessListener(snapshot -> {
 
             if (snapshot.exists()) {
                 Toast.makeText(this,
-                        "Order already submitted today",
+                        "Order already submitted for "+publication,
                         Toast.LENGTH_LONG).show();
                 return;
             }
