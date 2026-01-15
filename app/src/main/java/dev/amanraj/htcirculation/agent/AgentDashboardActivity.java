@@ -1,5 +1,6 @@
 package dev.amanraj.htcirculation.agent;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -8,6 +9,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import dev.amanraj.htcirculation.R;
 
 public class AgentDashboardActivity extends AppCompatActivity {
@@ -15,12 +18,16 @@ public class AgentDashboardActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_agent_dashboard);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        findViewById(R.id.btnPurchaseOrder).setOnClickListener(v ->
+                startActivity(new Intent(this, AgentPurchaseOrderActivity.class))
+        );
+
+        findViewById(R.id.btnExit).setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            finish();
         });
+
     }
 }
