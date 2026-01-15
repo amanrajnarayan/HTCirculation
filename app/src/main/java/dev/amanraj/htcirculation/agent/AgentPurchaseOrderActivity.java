@@ -3,6 +3,7 @@ package dev.amanraj.htcirculation.agent;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -26,16 +27,20 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
 
     private EditText etQuantity, etReturnAllowed, etIssueDate;
     private Spinner spPublication;
+    private Button btnSubmit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agent_purchase_order);
 
+
+
         etQuantity = findViewById(R.id.etQuantity);
         etReturnAllowed = findViewById(R.id.etReturnAllowed);
         etIssueDate = findViewById(R.id.etIssueDate);
         spPublication = findViewById(R.id.spPublication);
+        btnSubmit = findViewById(R.id.btnSubmitOrder);
 
         ArrayAdapter<CharSequence> publicationAdapter =ArrayAdapter.createFromResource(
                 this,R.array.publications,
@@ -48,7 +53,13 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
 
         etIssueDate.setOnClickListener(v -> openDatePicker());
 
-        findViewById(R.id.btnSubmitOrder).setOnClickListener(v -> submitClicked());
+        btnSubmit.setOnClickListener(v -> submitClicked());
+
+        if(isOrderCutoffPassed()){
+            btnSubmit.setEnabled(false);
+            btnSubmit.setAlpha(0.5f);
+            Toast.makeText(this, "Order time closed (after 4:00 PM)", Toast.LENGTH_LONG).show();
+        }
     }
 
     /* ---------------------- UI HANDLERS ---------------------- */
@@ -74,6 +85,11 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
     }
 
     private void submitClicked() {
+
+        if(isOrderCutoffPassed()){
+            Toast.makeText(this,"Order cannot be placed after 4:00 PM",Toast.LENGTH_LONG).show();
+            return;
+        }
 
         String qtyStr = etQuantity.getText().toString().trim();
         String retStr = etReturnAllowed.getText().toString().trim();
@@ -206,5 +222,14 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
                         finish();
                     });
         });
+    }
+
+    private boolean isOrderCutoffPassed(){
+        Calendar now = Calendar.getInstance();
+
+        int hour = now.get(Calendar.HOUR_OF_DAY);
+        int minute = now.get(Calendar.MINUTE);
+
+        return hour > 16 || (hour == 16 && minute >= 0);
     }
 }
