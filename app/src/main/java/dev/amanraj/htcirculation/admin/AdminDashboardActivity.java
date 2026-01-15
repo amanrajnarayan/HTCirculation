@@ -27,9 +27,9 @@ public class AdminDashboardActivity extends AppCompatActivity {
         findViewById(R.id.btnPurchaseOrder).setOnClickListener(view ->
                 startActivity(new Intent(this, AdminPurchaseSummaryActivity.class)));
 
-
         findViewById(R.id.btnBookUnsold).setOnClickListener(view ->
-                Toast.makeText(this, "Book Unsold - Coming Soon", Toast.LENGTH_SHORT).show());
+                startActivity(new Intent(this, AdminUnsoldSummaryActivity.class)));
+
         findViewById(R.id.btnSummary).setOnClickListener(view ->
                 Toast.makeText(this, "Summary - Coming Soon", Toast.LENGTH_SHORT).show());
         findViewById(R.id.btnExport).setOnClickListener(view ->

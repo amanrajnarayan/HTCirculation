@@ -29,5 +29,8 @@ public class AgentDashboardActivity extends AppCompatActivity {
             finish();
         });
 
+        findViewById(R.id.btnBookUnsold).setOnClickListener(view ->
+                startActivity(new Intent(this, AgentBookUnsoldActivity.class)));
+
     }
 }
