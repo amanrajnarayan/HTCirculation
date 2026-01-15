@@ -28,6 +28,7 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
     private EditText etQuantity, etReturnAllowed, etIssueDate;
     private Spinner spPublication;
     private Button btnSubmit;
+    private static final int ORDER_CUTOFF_HOUR =16;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -230,6 +231,6 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
         int hour = now.get(Calendar.HOUR_OF_DAY);
         int minute = now.get(Calendar.MINUTE);
 
-        return hour > 16 || (hour == 16 && minute >= 0);
+        return hour > ORDER_CUTOFF_HOUR || (hour == ORDER_CUTOFF_HOUR && minute >= 0);
     }
 }
