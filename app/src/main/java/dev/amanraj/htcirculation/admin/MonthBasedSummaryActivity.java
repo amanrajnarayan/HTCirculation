@@ -7,11 +7,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,6 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import dev.amanraj.htcirculation.R;
@@ -43,30 +40,35 @@ public class MonthBasedSummaryActivity extends AppCompatActivity {
         spPublication = findViewById(R.id.spPublication);
         rv = findViewById(R.id.rvSummary);
 
-        ArrayAdapter<CharSequence> adapterPub =
+        ArrayAdapter<CharSequence> pubAdapter =
                 ArrayAdapter.createFromResource(
                         this,
                         R.array.publications,
                         android.R.layout.simple_spinner_item
                 );
-        adapterPub.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spPublication.setAdapter(adapterPub);
+        pubAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+        spPublication.setAdapter(pubAdapter);
 
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MonthBasedSummaryAdapter(new ArrayList<>());
         rv.setAdapter(adapter);
 
         etMonth.setOnClickListener(v -> openMonthPicker());
-
         findViewById(R.id.btnLoad).setOnClickListener(v -> loadSummary());
     }
 
     private void openMonthPicker() {
+
         Calendar c = Calendar.getInstance();
+
         new DatePickerDialog(
                 this,
                 (view, year, month, day) -> {
-                    String m = year + "-" + String.format("%02d", month + 1);
+                    String m =
+                            year + "-" +
+                                    String.format("%02d", month + 1);
                     etMonth.setText(m);
                 },
                 c.get(Calendar.YEAR),
@@ -77,11 +79,17 @@ public class MonthBasedSummaryActivity extends AppCompatActivity {
 
     private void loadSummary() {
 
-        String month = etMonth.getText().toString().trim();
-        String publication = spPublication.getSelectedItem().toString();
+        String month =
+                etMonth.getText().toString().trim();
+        String publication =
+                spPublication.getSelectedItem().toString();
 
         if (month.isEmpty()) {
-            Toast.makeText(this, "Select month", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    this,
+                    "Select month",
+                    Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 
@@ -100,7 +108,10 @@ public class MonthBasedSummaryActivity extends AppCompatActivity {
 
                         dateDoc.getReference()
                                 .collection("orders")
-                                .whereEqualTo("publication", publication)
+                                .whereEqualTo(
+                                        "publication",
+                                        publication
+                                )
                                 .get()
                                 .addOnSuccessListener(qs -> {
 
@@ -108,8 +119,11 @@ public class MonthBasedSummaryActivity extends AppCompatActivity {
 
                                         String agentCode =
                                                 doc.getString("agentCode");
+                                        if (agentCode == null) continue;
+
                                         int qty =
-                                                doc.getLong("quantity").intValue();
+                                                doc.getLong("quantity")
+                                                        .intValue();
 
                                         AgentMonthSummary s =
                                                 map.computeIfAbsent(
@@ -129,6 +143,8 @@ public class MonthBasedSummaryActivity extends AppCompatActivity {
                     }
                 });
     }
+
+
 
     private void fetchUnsold(
             String date,
@@ -156,4 +172,7 @@ public class MonthBasedSummaryActivity extends AppCompatActivity {
                     adapter.update(new ArrayList<>(map.values()));
                 });
     }
+
+
+
 }

@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.time.LocalDate;
 import java.util.Calendar;
@@ -28,14 +29,13 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
     private EditText etQuantity, etReturnAllowed, etIssueDate;
     private Spinner spPublication;
     private Button btnSubmit;
-    private static final int ORDER_CUTOFF_HOUR =16;
+
+    private static final int ORDER_CUTOFF_HOUR = 16;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agent_purchase_order);
-
-
 
         etQuantity = findViewById(R.id.etQuantity);
         etReturnAllowed = findViewById(R.id.etReturnAllowed);
@@ -43,40 +43,39 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
         spPublication = findViewById(R.id.spPublication);
         btnSubmit = findViewById(R.id.btnSubmitOrder);
 
-        ArrayAdapter<CharSequence> publicationAdapter =ArrayAdapter.createFromResource(
-                this,R.array.publications,
-                android.R.layout.simple_spinner_item
-        );
+        ArrayAdapter<CharSequence> publicationAdapter =
+                ArrayAdapter.createFromResource(
+                        this,
+                        R.array.publications,
+                        android.R.layout.simple_spinner_item
+                );
         publicationAdapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item
         );
         spPublication.setAdapter(publicationAdapter);
 
         etIssueDate.setOnClickListener(v -> openDatePicker());
-
         btnSubmit.setOnClickListener(v -> submitClicked());
 
-        if(isOrderCutoffPassed()){
+        if (isOrderCutoffPassed()) {
             btnSubmit.setEnabled(false);
             btnSubmit.setAlpha(0.5f);
-            Toast.makeText(this, "Order time closed (after 4:00 PM)", Toast.LENGTH_LONG).show();
+            Toast.makeText(this,
+                    "Order time closed (after 4:00 PM)",
+                    Toast.LENGTH_LONG).show();
         }
     }
 
-    /* ---------------------- UI HANDLERS ---------------------- */
-
     private void openDatePicker() {
-
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, 1); // default = tomorrow
+        cal.add(Calendar.DAY_OF_MONTH, 1);
 
         new DatePickerDialog(
                 this,
-                (view, year, month, dayOfMonth) -> {
-                    String date =
-                            year + "-" +
-                                    String.format("%02d", month + 1) + "-" +
-                                    String.format("%02d", dayOfMonth);
+                (view, year, month, day) -> {
+                    String date = year + "-"
+                            + String.format("%02d", month + 1) + "-"
+                            + String.format("%02d", day);
                     etIssueDate.setText(date);
                 },
                 cal.get(Calendar.YEAR),
@@ -87,8 +86,10 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
 
     private void submitClicked() {
 
-        if(isOrderCutoffPassed()){
-            Toast.makeText(this,"Order cannot be placed after 4:00 PM",Toast.LENGTH_LONG).show();
+        if (isOrderCutoffPassed()) {
+            Toast.makeText(this,
+                    "Order cannot be placed after 4:00 PM",
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -107,9 +108,7 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
             return;
         }
 
-        int quantity;
-        int returnAllowed;
-
+        int quantity, returnAllowed;
         try {
             quantity = Integer.parseInt(qtyStr);
             returnAllowed = retStr.isEmpty() ? 0 : Integer.parseInt(retStr);
@@ -121,8 +120,6 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
         fetchAgentProfileAndSubmit(quantity, returnAllowed, issueDate, publication);
     }
 
-    /* ---------------------- DATA FLOW ---------------------- */
-
     private void fetchAgentProfileAndSubmit(
             int quantity,
             int returnAllowed,
@@ -131,12 +128,7 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
     ) {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (user == null) {
-            Toast.makeText(this, "Session expired. Login again.", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
+        if (user == null) return;
 
         FirebaseFirestore.getInstance()
                 .collection("users")
@@ -145,23 +137,16 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
                 .addOnSuccessListener(doc -> {
 
                     if (!doc.exists()) {
-                        Toast.makeText(this, "Agent profile not found", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    String agentCode = doc.getString("agentCode");
-                    String agentName = doc.getString("name");
-                    String district = doc.getString("district");
-
-                    if (agentCode == null || agentName == null || district == null) {
-                        Toast.makeText(this, "Incomplete agent profile", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this,
+                                "Agent profile not found",
+                                Toast.LENGTH_LONG).show();
                         return;
                     }
 
                     submitOrder(
-                            agentCode,
-                            agentName,
-                            district,
+                            doc.getString("agentCode"),
+                            doc.getString("name"),
+                            doc.getString("district"),
                             quantity,
                             returnAllowed,
                             issueDate,
@@ -181,10 +166,19 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
     ) {
 
         String orderDate = LocalDate.now().toString();
-
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        String orderId = agentCode+"_"+publication;
+        // ✅ FORCE-CREATE DATE DOCUMENT
+        Map<String, Object> dateMeta = new HashMap<>();
+        dateMeta.put("date", orderDate);
+        dateMeta.put("createdAt", FieldValue.serverTimestamp());
+
+        db.collection("purchase_orders")
+                .document(orderDate)
+                .set(dateMeta, SetOptions.merge());
+
+        String orderId = agentCode + "_" + publication;
+
         DocumentReference orderRef = db
                 .collection("purchase_orders")
                 .document(orderDate)
@@ -195,7 +189,7 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
 
             if (snapshot.exists()) {
                 Toast.makeText(this,
-                        "Order already submitted for "+publication,
+                        "Order already submitted for " + publication,
                         Toast.LENGTH_LONG).show();
                 return;
             }
@@ -204,19 +198,16 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
             data.put("agentCode", agentCode);
             data.put("agentName", agentName);
             data.put("district", district);
-
             data.put("publication", publication);
             data.put("issueDate", issueDate);
             data.put("orderDate", orderDate);
-
             data.put("quantity", quantity);
             data.put("returnAllowed", returnAllowed);
-
             data.put("status", "submitted");
             data.put("submittedAt", FieldValue.serverTimestamp());
 
             orderRef.set(data)
-                    .addOnSuccessListener(unused -> {
+                    .addOnSuccessListener(v -> {
                         Toast.makeText(this,
                                 "Order submitted successfully",
                                 Toast.LENGTH_SHORT).show();
@@ -225,12 +216,9 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
         });
     }
 
-    private boolean isOrderCutoffPassed(){
+    private boolean isOrderCutoffPassed() {
         Calendar now = Calendar.getInstance();
-
         int hour = now.get(Calendar.HOUR_OF_DAY);
-        int minute = now.get(Calendar.MINUTE);
-
-        return hour > ORDER_CUTOFF_HOUR || (hour == ORDER_CUTOFF_HOUR && minute >= 0);
+        return hour >= ORDER_CUTOFF_HOUR;
     }
 }

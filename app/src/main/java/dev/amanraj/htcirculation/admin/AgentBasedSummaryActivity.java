@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,19 +37,16 @@ public class AgentBasedSummaryActivity extends AppCompatActivity {
         spPublication = findViewById(R.id.spPublication);
         rv = findViewById(R.id.rvSummary);
 
-        // ✅ Java-style spinner adapter (NO Kotlin helpers)
-        ArrayAdapter<CharSequence> publicationAdapter =
+        ArrayAdapter<CharSequence> pubAdapter =
                 ArrayAdapter.createFromResource(
                         this,
                         R.array.publications,
                         android.R.layout.simple_spinner_item
                 );
-
-        publicationAdapter.setDropDownViewResource(
+        pubAdapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item
         );
-
-        spPublication.setAdapter(publicationAdapter);
+        spPublication.setAdapter(pubAdapter);
 
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AgentBasedSummaryAdapter(list);
@@ -59,8 +57,10 @@ public class AgentBasedSummaryActivity extends AppCompatActivity {
 
     private void loadSummary() {
 
-        String agentCode = etAgentCode.getText().toString().trim().toUpperCase();
-        String publication = spPublication.getSelectedItem().toString();
+        String agentCode =
+                etAgentCode.getText().toString().trim().toUpperCase();
+        String publication =
+                spPublication.getSelectedItem().toString();
 
         if (agentCode.isEmpty()) {
             etAgentCode.setError("Required");
@@ -70,19 +70,30 @@ public class AgentBasedSummaryActivity extends AppCompatActivity {
         list.clear();
         adapter.notifyDataSetChanged();
 
+        String currentMonth =
+                LocalDate.now().toString().substring(0, 7);
+
         FirebaseFirestore.getInstance()
                 .collection("purchase_orders")
                 .get()
                 .addOnSuccessListener(snapshot -> {
 
                     if (snapshot.isEmpty()) {
-                        Toast.makeText(this, "No orders found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                                this,
+                                "No orders found",
+                                Toast.LENGTH_SHORT
+                        ).show();
                         return;
                     }
 
                     for (var dateDoc : snapshot.getDocuments()) {
+
                         String date = dateDoc.getId();
-                        String docId=agentCode+"_"+publication;
+                        if (!date.startsWith(currentMonth)) continue;
+
+                        String docId = agentCode + "_" + publication;
+
                         dateDoc.getReference()
                                 .collection("orders")
                                 .document(docId)
@@ -91,24 +102,18 @@ public class AgentBasedSummaryActivity extends AppCompatActivity {
 
                                     if (!orderDoc.exists()) return;
 
-                                    String pub = orderDoc.getString("publication");
-                                    if (!publication.equals(pub)) return;
-
-                                    Long qty = orderDoc.getLong("quantity");
-                                    if (qty == null) return;
-
-                                    int purchased = qty.intValue();
+                                    Long q = orderDoc.getLong("quantity");
+                                    if (q == null) return;
 
                                     fetchUnsoldAndAddRow(
                                             date,
                                             agentCode,
                                             publication,
-                                            purchased
+                                            q.intValue()
                                     );
                                 });
                     }
                 });
-        Toast.makeText(this,"Searching orders.",Toast.LENGTH_SHORT).show();
     }
 
     private void fetchUnsoldAndAddRow(
@@ -117,7 +122,9 @@ public class AgentBasedSummaryActivity extends AppCompatActivity {
             String publication,
             int purchased
     ) {
-        String docId=agentCode+"_"+publication;
+
+        String docId = agentCode + "_" + publication;
+
         FirebaseFirestore.getInstance()
                 .collection("unsold_entries")
                 .document(date)
@@ -129,15 +136,13 @@ public class AgentBasedSummaryActivity extends AppCompatActivity {
                     int unsold = 0;
 
                     if (unsoldDoc.exists()) {
-                        String pub = unsoldDoc.getString("publication");
                         Long u = unsoldDoc.getLong("unsoldQty");
-
-                        if (publication.equals(pub) && u != null) {
-                            unsold = u.intValue();
-                        }
+                        if (u != null) unsold = u.intValue();
                     }
 
-                    list.add(new AgentDateSummary(date, purchased, unsold));
+                    list.add(
+                            new AgentDateSummary(date, purchased, unsold)
+                    );
                     adapter.notifyDataSetChanged();
                 });
     }

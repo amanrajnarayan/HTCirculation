@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -44,24 +45,24 @@ public class AgentBookUnsoldActivity extends AppCompatActivity {
         tvOrderedInfo = findViewById(R.id.tvOrderedInfo);
         btnSubmit = findViewById(R.id.btnSubmitUnsold);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.publications,
-                android.R.layout.simple_spinner_item
+        ArrayAdapter<CharSequence> adapter =
+                ArrayAdapter.createFromResource(
+                        this,
+                        R.array.publications,
+                        android.R.layout.simple_spinner_item
+                );
+        adapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
         );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spPublication.setAdapter(adapter);
 
         etIssueDate.setOnClickListener(v -> openDatePicker());
-
         btnSubmit.setOnClickListener(v -> submitUnsold());
     }
 
-//    DateDicker
-
     private void openDatePicker() {
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, -1); // unsold is usually for past issue
+        cal.add(Calendar.DAY_OF_MONTH, -1);
 
         new DatePickerDialog(
                 this,
@@ -78,64 +79,50 @@ public class AgentBookUnsoldActivity extends AppCompatActivity {
         ).show();
     }
 
-//    Fetch purchase order
-
     private void fetchPurchaseOrder() {
 
         String issueDate = etIssueDate.getText().toString().trim();
         String publication = spPublication.getSelectedItem().toString();
 
-        if (issueDate.isEmpty()) return;
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        db.collection("users")
+        FirebaseFirestore.getInstance()
+                .collection("users")
                 .document(user.getUid())
                 .get()
                 .addOnSuccessListener(userDoc -> {
 
-                    if (!userDoc.exists()) {
-                        Toast.makeText(this, "Agent profile not found", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
                     String agentCode = userDoc.getString("agentCode");
-                    String orderDate = issueDate; // purchase orders grouped by orderDate
                     String orderId = agentCode + "_" + publication;
 
-                    DocumentReference orderRef = db
+                    FirebaseFirestore.getInstance()
                             .collection("purchase_orders")
-                            .document(orderDate)
+                            .document(issueDate)
                             .collection("orders")
-                            .document(orderId);
+                            .document(orderId)
+                            .get()
+                            .addOnSuccessListener(orderDoc -> {
 
-                    orderRef.get().addOnSuccessListener(orderDoc -> {
+                                if (!orderDoc.exists()) {
+                                    tvOrderedInfo.setText("No purchase order found");
+                                    orderedQty = -1;
+                                    returnAllowed = -1;
+                                    return;
+                                }
 
-                        if (!orderDoc.exists()) {
-                            tvOrderedInfo.setText("No purchase order found");
-                            orderedQty = -1;
-                            returnAllowed = -1;
-                            return;
-                        }
+                                orderedQty =
+                                        orderDoc.getLong("quantity").intValue();
+                                returnAllowed =
+                                        orderDoc.getLong("returnAllowed").intValue();
 
-                        Long oq = orderDoc.getLong("quantity");
-                        Long ra = orderDoc.getLong("returnAllowed");
-
-                        orderedQty = oq != null ? oq.intValue() : 0;
-                        returnAllowed = ra != null ? ra.intValue() : 0;
-
-                        tvOrderedInfo.setText(
-                                "Ordered: " + orderedQty
-                                        + " | Return Allowed: " + returnAllowed
-                        );
-                    });
+                                tvOrderedInfo.setText(
+                                        "Ordered: " + orderedQty +
+                                                " | Return Allowed: " + returnAllowed
+                                );
+                            });
                 });
     }
-
-//    submit unsold
 
     private void submitUnsold() {
 
@@ -143,53 +130,28 @@ public class AgentBookUnsoldActivity extends AppCompatActivity {
         String issueDate = etIssueDate.getText().toString().trim();
         String publication = spPublication.getSelectedItem().toString();
 
-        if (issueDate.isEmpty()) {
-            Toast.makeText(this, "Select issue date", Toast.LENGTH_SHORT).show();
+        if (issueDate.isEmpty() || orderedQty < 0) {
+            Toast.makeText(this,
+                    "Invalid order selection",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (orderedQty < 0) {
-            Toast.makeText(this, "No valid purchase order", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (unsoldStr.isEmpty()) {
-            etUnsoldQty.setError("Required");
-            return;
-        }
-
-        int unsoldQty;
-        try {
-            unsoldQty = Integer.parseInt(unsoldStr);
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Invalid number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (unsoldQty < 0 || unsoldQty > returnAllowed) {
-            Toast.makeText(
-                    this,
-                    "Unsold must be between 0 and " + returnAllowed,
-                    Toast.LENGTH_LONG
-            ).show();
-            return;
-        }
-
-        saveUnsold(issueDate, publication, unsoldQty);
-    }
-
-//    save unsold
-
-    private void saveUnsold(
-            String issueDate,
-            String publication,
-            int unsoldQty
-    ) {
+        int unsoldQty = Integer.parseInt(unsoldStr);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // ✅ FORCE-CREATE DATE DOCUMENT
+        Map<String, Object> dateMeta = new HashMap<>();
+        dateMeta.put("date", issueDate);
+        dateMeta.put("createdAt", FieldValue.serverTimestamp());
+
+        db.collection("unsold_entries")
+                .document(issueDate)
+                .set(dateMeta, SetOptions.merge());
 
         db.collection("users")
                 .document(user.getUid())
@@ -197,49 +159,30 @@ public class AgentBookUnsoldActivity extends AppCompatActivity {
                 .addOnSuccessListener(userDoc -> {
 
                     String agentCode = userDoc.getString("agentCode");
-                    String agentName = userDoc.getString("name");
-                    String district = userDoc.getString("district");
-
                     String entryId = agentCode + "_" + publication;
 
-                    DocumentReference unsoldRef = db
+                    DocumentReference ref = db
                             .collection("unsold_entries")
                             .document(issueDate)
                             .collection("entries")
                             .document(entryId);
 
-                    unsoldRef.get().addOnSuccessListener(snapshot -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("agentCode", agentCode);
+                    data.put("publication", publication);
+                    data.put("issueDate", issueDate);
+                    data.put("orderedQty", orderedQty);
+                    data.put("returnAllowed", returnAllowed);
+                    data.put("unsoldQty", unsoldQty);
+                    data.put("bookedAt", FieldValue.serverTimestamp());
 
-                        if (snapshot.exists()) {
-                            Toast.makeText(
-                                    this,
-                                    "Unsold already booked",
-                                    Toast.LENGTH_LONG
-                            ).show();
-                            return;
-                        }
-
-                        Map<String, Object> data = new HashMap<>();
-                        data.put("agentCode", agentCode);
-                        data.put("agentName", agentName);
-                        data.put("district", district);
-                        data.put("publication", publication);
-                        data.put("issueDate", issueDate);
-                        data.put("orderedQty", orderedQty);
-                        data.put("returnAllowed", returnAllowed);
-                        data.put("unsoldQty", unsoldQty);
-                        data.put("bookedAt", FieldValue.serverTimestamp());
-
-                        unsoldRef.set(data)
-                                .addOnSuccessListener(v -> {
-                                    Toast.makeText(
-                                            this,
-                                            "Unsold booked successfully",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-                                    finish();
-                                });
-                    });
+                    ref.set(data)
+                            .addOnSuccessListener(v -> {
+                                Toast.makeText(this,
+                                        "Unsold booked successfully",
+                                        Toast.LENGTH_SHORT).show();
+                                finish();
+                            });
                 });
     }
 }
