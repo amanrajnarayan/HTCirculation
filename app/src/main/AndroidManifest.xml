@@ -13,6 +13,15 @@
         android:theme="@style/Theme.HTCirculation"
         tools:targetApi="31">
         <activity
+            android:name=".admin.MonthBasedSummaryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AgentBasedSummaryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminSummaryActivity"
+            android:exported="false" />
+        <activity
             android:name=".admin.AdminUnsoldSummaryActivity"
             android:exported="false" />
         <activity
