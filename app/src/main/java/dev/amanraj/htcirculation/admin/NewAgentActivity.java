@@ -7,12 +7,11 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -30,13 +29,14 @@ public class NewAgentActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_agent);
-        spDistrict=findViewById(R.id.spDistrict);
+
+        spDistrict = findViewById(R.id.spDistrict);
+
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.district_list,
                 android.R.layout.simple_spinner_item
         );
-
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spDistrict.setAdapter(adapter);
 
@@ -44,8 +44,9 @@ public class NewAgentActivity extends AppCompatActivity {
             String district = spDistrict.getSelectedItem().toString();
             generateNextAgentCode(district);
         });
-
     }
+
+    //agent code creation
 
     private void generateNextAgentCode(String district) {
         String prefix = getDistrictPrefix(district);
@@ -71,14 +72,18 @@ public class NewAgentActivity extends AppCompatActivity {
                         }
                     }
 
-                    String newAgentCode = prefix + String.format("%03d", nextNumber);
-                    Log.d("AGENT_CODE", "Generated: " + newAgentCode);
+                    String newAgentCode =
+                            prefix + String.format("%03d", nextNumber);
 
+                    Log.d("AGENT_CODE", "Generated: " + newAgentCode);
                     saveAgent(newAgentCode);
                 });
     }
 
+    //save agent
+
     private void saveAgent(String agentCode) {
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         String name = ((EditText) findViewById(R.id.etAgentName))
@@ -86,6 +91,18 @@ public class NewAgentActivity extends AppCompatActivity {
 
         if (name.isEmpty()) {
             Toast.makeText(this, "Agent name is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String password = ((EditText) findViewById(R.id.etPassword))
+                .getText().toString().trim();
+
+        if (password.length() < 6) {
+            Toast.makeText(
+                    this,
+                    "Password must be at least 6 characters",
+                    Toast.LENGTH_LONG
+            ).show();
             return;
         }
 
@@ -102,9 +119,12 @@ public class NewAgentActivity extends AppCompatActivity {
         agent.put("agentCode", agentCode);
         agent.put("name", name);
         agent.put("district", spDistrict.getSelectedItem().toString());
-        agent.put("address", ((EditText) findViewById(R.id.etAddress)).getText().toString().trim());
-        agent.put("dropPoint", ((EditText) findViewById(R.id.etDropPoint)).getText().toString().trim());
-        agent.put("locationUrl", ((EditText) findViewById(R.id.etLocationUrl)).getText().toString().trim());
+        agent.put("address",
+                ((EditText) findViewById(R.id.etAddress)).getText().toString().trim());
+        agent.put("dropPoint",
+                ((EditText) findViewById(R.id.etDropPoint)).getText().toString().trim());
+        agent.put("locationUrl",
+                ((EditText) findViewById(R.id.etLocationUrl)).getText().toString().trim());
         agent.put("unsoldLimit", unsoldLimit);
         agent.put("securityDeposit", securityDeposit);
         agent.put("active", true);
@@ -114,16 +134,66 @@ public class NewAgentActivity extends AppCompatActivity {
                 .document(agentCode)
                 .set(agent)
                 .addOnSuccessListener(unused ->
-                        Toast.makeText(this, "Agent created: " + agentCode, Toast.LENGTH_LONG).show()
+                        createAgentLogin(agentCode, name, password)
                 )
                 .addOnFailureListener(e ->
                         Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show()
                 );
     }
 
+    //agent login creation
 
+    private void createAgentLogin(
+            String agentCode,
+            String name,
+            String password
+    ) {
 
+        String email = agentCode.toLowerCase() + "@poms.ht";
 
+        FirebaseOptions options = FirebaseApp.getInstance().getOptions();
+        FirebaseApp secondaryApp;
+
+        try {
+            secondaryApp =
+                    FirebaseApp.initializeApp(this, options, "SecondaryAuth");
+        } catch (IllegalStateException e) {
+            secondaryApp = FirebaseApp.getInstance("SecondaryAuth");
+        }
+
+        FirebaseAuth secondaryAuth = FirebaseAuth.getInstance(secondaryApp);
+
+        secondaryAuth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(result -> {
+
+                    String uid = result.getUser().getUid();
+
+                    Map<String, Object> user = new HashMap<>();
+                    user.put("role", "agent");
+                    user.put("agentCode", agentCode);
+                    user.put("name", name);
+                    user.put("district", spDistrict.getSelectedItem().toString());
+                    user.put("email", email);
+
+                    FirebaseFirestore.getInstance()
+                            .collection("users")
+                            .document(uid)
+                            .set(user)
+                            .addOnSuccessListener(v -> {
+                                Toast.makeText(
+                                        this,
+                                        "Agent created. Login ID: " + email,
+                                        Toast.LENGTH_LONG
+                                ).show();
+                                finish();
+                            });
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show()
+                );
+    }
+
+    //district prefix
 
     private String getDistrictPrefix(String district) {
         switch (district) {
@@ -168,5 +238,4 @@ public class NewAgentActivity extends AppCompatActivity {
             default: return "UNK";
         }
     }
-
 }

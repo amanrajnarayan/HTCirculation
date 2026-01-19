@@ -37,6 +37,11 @@ public class AgentAdapter extends RecyclerView.Adapter<AgentAdapter.AgentViewHol
         holder.tvAgentName.setText(agent.name);
         holder.tvDistrict.setText(agent.district);
 
+        // ✅ Derived User ID
+        String userId =
+                agent.agentCode.toLowerCase() + "@poms.ht";
+        holder.tvAgentUserId.setText("User ID: " + userId);
+
         // Safe drop point handling
         if (agent.dropPoint == null || agent.dropPoint.trim().isEmpty()) {
             holder.tvDropPoint.setText("Drop: —");
@@ -52,11 +57,12 @@ public class AgentAdapter extends RecyclerView.Adapter<AgentAdapter.AgentViewHol
 
     static class AgentViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvAgentCode, tvAgentName, tvDistrict, tvDropPoint;
+        TextView tvAgentCode, tvAgentUserId, tvAgentName, tvDistrict, tvDropPoint;
 
         AgentViewHolder(@NonNull View itemView) {
             super(itemView);
             tvAgentCode = itemView.findViewById(R.id.tvAgentCode);
+            tvAgentUserId = itemView.findViewById(R.id.tvAgentUserId);
             tvAgentName = itemView.findViewById(R.id.tvAgentName);
             tvDistrict = itemView.findViewById(R.id.tvDistrict);
             tvDropPoint = itemView.findViewById(R.id.tvDropPoint);

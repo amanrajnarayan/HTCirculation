@@ -27,6 +27,9 @@ public class AgentMenuActivity extends AppCompatActivity {
         findViewById(R.id.btnDeleteAgent).setOnClickListener(view ->
                 startActivity(new Intent(this, DeleteAgentActivity.class)));
 
+        findViewById(R.id.btnReactivateAgent).setOnClickListener(view ->
+                startActivity(new Intent(this, ReactivateAgentActivity.class)));
+
         findViewById(R.id.btnBack).setOnClickListener(view -> finish());
     }
 }

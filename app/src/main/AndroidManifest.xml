@@ -13,6 +13,9 @@
         android:theme="@style/Theme.HTCirculation"
         tools:targetApi="31">
         <activity
+            android:name=".admin.ReactivateAgentActivity"
+            android:exported="false" />
+        <activity
             android:name=".admin.MonthBasedSummaryActivity"
             android:exported="false" />
         <activity

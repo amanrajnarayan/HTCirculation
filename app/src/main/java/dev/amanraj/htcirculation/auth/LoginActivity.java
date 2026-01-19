@@ -46,37 +46,129 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void login(String email, String password) {
-        auth.signInWithEmailAndPassword(email, password)
-                .addOnSuccessListener(result -> {
-                    String uid = result.getUser().getUid();
+//    private void login(String email, String password) {
+//        auth.signInWithEmailAndPassword(email, password)
+//                .addOnSuccessListener(result -> {
+//                    String uid = result.getUser().getUid();
+//
+//                    db.collection("users").document(uid).get()
+//                            .addOnSuccessListener(doc -> {
+//                                if (!doc.exists()) {
+//                                    Toast.makeText(this, "No role assigned", Toast.LENGTH_LONG).show();
+//                                    auth.signOut();
+//                                    return;
+//                                }
+//
+//                                String actualRole = doc.getString("role");
+//
+//                                if (!expectedRole.equals(actualRole)) {
+//                                    Toast.makeText(this, "Unauthorized role", Toast.LENGTH_LONG).show();
+//                                    auth.signOut();
+//                                    return;
+//                                }
+//
+//                                if ("admin".equals(actualRole)) {
+//                                    startActivity(new Intent(this, AdminDashboardActivity.class));
+//                                } else {
+//                                    startActivity(new Intent(this, AgentDashboardActivity.class));
+//                                }
+//                                finish();
+//                            });
+//                })
+//                .addOnFailureListener(e ->
+//                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show()
+//                );
+//    }
+private void login(String email, String password) {
 
-                    db.collection("users").document(uid).get()
-                            .addOnSuccessListener(doc -> {
-                                if (!doc.exists()) {
-                                    Toast.makeText(this, "No role assigned", Toast.LENGTH_LONG).show();
-                                    auth.signOut();
-                                    return;
-                                }
+    auth.signInWithEmailAndPassword(email, password)
+            .addOnSuccessListener(result -> {
 
-                                String actualRole = doc.getString("role");
+                String uid = result.getUser().getUid();
 
-                                if (!expectedRole.equals(actualRole)) {
-                                    Toast.makeText(this, "Unauthorized role", Toast.LENGTH_LONG).show();
-                                    auth.signOut();
-                                    return;
-                                }
+                db.collection("users")
+                        .document(uid)
+                        .get()
+                        .addOnSuccessListener(doc -> {
 
-                                if ("admin".equals(actualRole)) {
-                                    startActivity(new Intent(this, AdminDashboardActivity.class));
-                                } else {
-                                    startActivity(new Intent(this, AgentDashboardActivity.class));
-                                }
+                            if (!doc.exists()) {
+                                forceLogout("No role assigned");
+                                return;
+                            }
+
+                            String actualRole = doc.getString("role");
+
+                            if (!expectedRole.equals(actualRole)) {
+                                forceLogout("Unauthorized role");
+                                return;
+                            }
+
+                            // 🔐 ADMIN → DIRECT ACCESS
+                            if ("admin".equals(actualRole)) {
+                                startActivity(
+                                        new Intent(
+                                                this,
+                                                AdminDashboardActivity.class
+                                        )
+                                );
                                 finish();
-                            });
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+                                return;
+                            }
+
+                            // agent - check active status
+                            if ("agent".equals(actualRole)) {
+
+                                String agentCode = doc.getString("agentCode");
+
+                                if (agentCode == null) {
+                                    forceLogout("Invalid agent profile");
+                                    return;
+                                }
+
+                                db.collection("agents")
+                                        .document(agentCode)
+                                        .get()
+                                        .addOnSuccessListener(agentDoc -> {
+
+                                            if (!agentDoc.exists()) {
+                                                forceLogout("Agent not found");
+                                                return;
+                                            }
+
+                                            Boolean active =
+                                                    agentDoc.getBoolean("active");
+
+                                            if (active == null || !active) {
+                                                forceLogout(
+                                                        "Your account has been deactivated. Contact office."
+                                                );
+                                                return;
+                                            }
+
+                                            //active agent
+                                            startActivity(
+                                                    new Intent(
+                                                            this,
+                                                            AgentDashboardActivity.class
+                                                    )
+                                            );
+                                            finish();
+                                        });
+                            }
+                        });
+            })
+            .addOnFailureListener(e ->
+                    Toast.makeText(
+                            this,
+                            e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show()
+            );
     }
+    private void forceLogout(String message) {
+        FirebaseAuth.getInstance().signOut();
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    }
+
+
 }
