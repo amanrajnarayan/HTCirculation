@@ -2,6 +2,7 @@ package dev.amanraj.htcirculation.agent;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,13 +25,16 @@ public class AgentDashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AgentPurchaseOrderActivity.class))
         );
 
+        findViewById(R.id.btnBookUnsold).setOnClickListener(view ->
+                startActivity(new Intent(this, AgentBookUnsoldActivity.class)));
+
+        findViewById(R.id.btnSummary).setOnClickListener(view ->
+                startActivity(new Intent(this, AgentSummaryActivity.class)));
+
         findViewById(R.id.btnExit).setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
             finish();
         });
-
-        findViewById(R.id.btnBookUnsold).setOnClickListener(view ->
-                startActivity(new Intent(this, AgentBookUnsoldActivity.class)));
 
     }
 }
