@@ -35,7 +35,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
 
         findViewById(R.id.btnExport).setOnClickListener(view ->
-                Toast.makeText(this, "Export - Coming Soon", Toast.LENGTH_SHORT).show());
+                startActivity(new Intent(this,AdminExportActivity.class)));
 
         findViewById(R.id.btnExit).setOnClickListener(view -> {
             FirebaseAuth.getInstance().signOut();
