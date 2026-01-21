@@ -2,4 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="bg_main">#EDB282</color>
+    <color name="primary_red">#AE292F</color>
+    <color name="text_dark">#1D1E18</color>
+    <color name="text_light">#FDFFFC</color>
+
+<!--    ui helper-->
+    <color name="card_bg">#FDFFFC</color>
+    <color name="divider">#33000000</color>
+    <color name="disabled">#80AE292F</color>
 </resources>

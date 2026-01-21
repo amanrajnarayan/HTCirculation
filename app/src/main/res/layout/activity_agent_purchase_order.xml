@@ -26,7 +26,8 @@
             android:id="@+id/spPublication"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="16dp"
+            android:popupBackground="@color/card_bg"/>
 
         <EditText
             android:id="@+id/etIssueDate"
@@ -35,7 +36,11 @@
             android:layout_marginTop="16dp"
             android:hint="Issue Date"
             android:focusable="false"
-            android:clickable="true" />
+            android:clickable="true"
+            android:backgroundTint="@color/primary_red"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_dark"
+            android:textSize="15sp"/>
 
         <EditText
             android:id="@+id/etQuantity"
@@ -43,7 +48,11 @@
             android:layout_height="wrap_content"
             android:hint="Required Quantity"
             android:inputType="number"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/primary_red"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_dark"
+            android:textSize="15sp"/>
 
         <EditText
             android:id="@+id/etReturnAllowed"
@@ -51,14 +60,21 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="Return Allowed"
-            android:inputType="number"/>
+            android:inputType="number"
+            android:backgroundTint="@color/primary_red"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_dark"
+            android:textSize="15sp"/>
 
         <Button
             android:id="@+id/btnSubmitOrder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Submit Order"
-            android:layout_marginTop="24dp"/>
+            android:layout_marginTop="24dp"
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <TextView
             android:layout_width="wrap_content"

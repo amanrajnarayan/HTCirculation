@@ -8,14 +8,18 @@
     <Spinner
         android:id="@+id/spPublication"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:popupBackground="@color/card_bg"/>
 
     <Button
         android:id="@+id/btnLoadSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Load Summary"
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="12dp"
+        android:background="@drawable/btn_primary"
+        android:textColor="@color/text_light"
+        android:textAllCaps="false"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSummary"

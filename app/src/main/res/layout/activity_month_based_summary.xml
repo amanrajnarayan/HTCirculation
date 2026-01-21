@@ -11,18 +11,26 @@
         android:hint="YYYY-MM"
         android:focusable="false"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/primary_red"
+        android:textColor="@color/text_dark"
+        android:textColorHint="@color/text_dark"
+        android:textSize="15sp"/>
 
     <Spinner
         android:id="@+id/spPublication"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:popupBackground="@color/card_bg"/>
 
     <Button
         android:id="@+id/btnLoad"
         android:text="Load Summary"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_primary"
+        android:textColor="@color/text_light"
+        android:textAllCaps="false"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSummary"

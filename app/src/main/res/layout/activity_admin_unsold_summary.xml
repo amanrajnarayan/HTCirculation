@@ -9,6 +9,7 @@
         android:id="@+id/spPublication"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:popupBackground="@color/card_bg"
 />
 
     <EditText
@@ -17,7 +18,11 @@
         android:focusable="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/primary_red"
+        android:textColor="@color/text_dark"
+        android:textColorHint="@color/text_dark"
+        android:textSize="15sp"/>
 
 
     <androidx.recyclerview.widget.RecyclerView

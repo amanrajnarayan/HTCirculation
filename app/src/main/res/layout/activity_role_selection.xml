@@ -19,14 +19,20 @@
             android:id="@+id/adm_log_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Login as Admin" />
+            android:text="Login as Admin"
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/agt_log_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Login as Agent"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="16dp"
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
     </LinearLayout>
 

@@ -19,42 +19,60 @@
             android:id="@+id/btnAgent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Agent" />
+            android:text="Agent"
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/btnPurchaseOrder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Purchase Order" />
+            android:text="Purchase Order"
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/btnBookUnsold"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Book Unsold" />
+            android:text="Book Unsold"
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/btnSummary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Summary" />
+            android:text="Summary"
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/btnExport"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Export" />
+            android:text="Export"
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/btnExit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Exit" />
+            android:text="Exit"
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
     </LinearLayout>
 

@@ -48,11 +48,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Purchase Order"
-            android:textAllCaps="false"
             android:textSize="16sp"
             android:layout_marginBottom="16dp"
-            android:backgroundTint="#1E6C8B"
-            android:textColor="#FFFFFF" />
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <!-- Book Unsold -->
         <Button
@@ -60,11 +60,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Book Unsold"
-            android:textAllCaps="false"
             android:textSize="16sp"
             android:layout_marginBottom="16dp"
-            android:backgroundTint="#1E6C8B"
-            android:textColor="#FFFFFF" />
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <!-- Summary -->
         <Button
@@ -72,11 +72,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Summary"
-            android:textAllCaps="false"
             android:textSize="16sp"
             android:layout_marginBottom="16dp"
-            android:backgroundTint="#1E6C8B"
-            android:textColor="#FFFFFF" />
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
         <!-- Exit -->
         <Button
@@ -84,10 +84,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Exit"
-            android:textAllCaps="false"
             android:textSize="16sp"
-            android:backgroundTint="#1E6C8B"
-            android:textColor="#FFFFFF" />
+            android:background="@drawable/btn_primary"
+            android:textColor="@color/text_light"
+            android:textAllCaps="false"/>
 
     </LinearLayout>
 
