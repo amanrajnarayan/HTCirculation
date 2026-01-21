@@ -90,34 +90,51 @@ public class AdminUnsoldSummaryActivity extends AppCompatActivity {
         ).show();
     }
 
-    private void loadSummary(String issueDate) {
+private void loadSummary(String issueDate) {
 
-        String publication = spPublication.getSelectedItem().toString();
-        list.clear();
-        adapter.notifyDataSetChanged();
-        FirebaseFirestore.getInstance()
-                .collection("unsold_entries")
-                .document(issueDate)
-                .collection("entries")
-                .whereEqualTo("publication", publication)
-                .get()
-                .addOnSuccessListener(qs -> {
-                    list.clear();
+    String publication = spPublication.getSelectedItem().toString();
+    list.clear();
+    adapter.notifyDataSetChanged();
 
-                    for (var doc : qs.getDocuments()) {
-                        UnsoldEntry e = doc.toObject(UnsoldEntry.class);
-                        if (e != null) list.add(e);
-                    }
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-                    adapter.notifyDataSetChanged();
+    db.collection("unsold_entries")
+            .document(issueDate)
+            .collection("entries")
+            .whereEqualTo("publication", publication)
+            .get()
+            .addOnSuccessListener(qs -> {
 
-                    if (list.isEmpty()) {
-                        Toast.makeText(
-                                this,
-                                "No unsold entries found",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                });
-    }
+                if (qs.isEmpty()) {
+                    Toast.makeText(
+                            this,
+                            "No unsold entries found",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    return;
+                }
+
+                for (var doc : qs.getDocuments()) {
+
+                    UnsoldEntry e = doc.toObject(UnsoldEntry.class);
+                    if (e == null || e.agentCode == null) continue;
+
+                    // 🔥 FETCH AGENT DETAILS
+                    db.collection("agents")
+                            .document(e.agentCode)
+                            .get()
+                            .addOnSuccessListener(agentDoc -> {
+
+                                if (agentDoc.exists()) {
+
+                                    e.district = agentDoc.getString("district");
+                                }
+
+                                list.add(e);
+                                adapter.notifyDataSetChanged();
+                            });
+                }
+            });
+}
+
 }

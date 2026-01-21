@@ -34,8 +34,8 @@ public class UnsoldSummaryAdapter
     public void onBindViewHolder(@NonNull ViewHolder h, int pos) {
         UnsoldEntry e = list.get(pos);
 
-        h.tvAgent.setText(e.agentCode + " - " + e.agentName);
-        h.tvDistrict.setText(e.district);
+        h.tvAgent.setText(e.agentCode);
+        h.tvDistrict.setText(e.district != null ? e.district:"");
         h.tvOrdered.setText("Ordered: " + e.orderedQty);
         h.tvUnsold.setText("Unsold: " + e.unsoldQty);
         h.tvNet.setText("Net Sold: " + e.getNetSold());

@@ -3,7 +3,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="bg_main">#EDB282</color>
+<!--    <color name="bg_main">#EDB282</color>-->
+<!--    <color name="bg_main">#fdc135</color>-->
+    <color name="bg_main">#fac445</color>
     <color name="primary_red">#AE292F</color>
     <color name="text_dark">#1D1E18</color>
     <color name="text_light">#FDFFFC</color>

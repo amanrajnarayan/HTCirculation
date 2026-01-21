@@ -3,8 +3,16 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp">
 <!--    android:background="#F6C6A8">-->
+
+    <include
+        android:id="@+id/layoutMasthead"
+        layout="@layout/layout_masthead"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- Main Vertical Container -->
     <LinearLayout
@@ -12,37 +20,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal"
+        android:layout_marginTop="8dp"
         android:padding="24dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutMasthead"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Logo (optional image later) -->
-<!--        <TextView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Hindustan Times\nहिन्दुस्तान"-->
-<!--            android:textStyle="bold"-->
-<!--            android:textSize="20sp"-->
-<!--            android:textAlignment="center"-->
-<!--            android:textColor="#000000" />-->
 
-<!--        <TextView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Circulation System\nAgent"-->
-<!--            android:textAlignment="center"-->
-<!--            android:textSize="14sp"-->
-<!--            android:layout_marginTop="8dp"-->
-<!--            android:textColor="#000000" />-->
-
-        <!-- Spacer -->
-<!--        <View-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="32dp" />-->
-
-        <!-- Purchase Order -->
         <Button
             android:id="@+id/btnPurchaseOrder"
             android:layout_width="match_parent"

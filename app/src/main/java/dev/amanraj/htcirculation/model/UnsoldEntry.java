@@ -3,7 +3,7 @@ package dev.amanraj.htcirculation.model;
 public class UnsoldEntry {
 
     public String agentCode;
-    public String agentName;
+
     public String district;
     public String publication;
     public String issueDate;
