@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HTCirculation</string>
+    <string name="app_name">POMS</string>
 
     <string-array name="district_list">
         <item>Araria</item>
