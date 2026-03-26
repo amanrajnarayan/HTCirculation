@@ -167,53 +167,105 @@ public class AgentPurchaseOrderActivity extends AppCompatActivity {
 
         String orderDate = LocalDate.now().toString();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // ✅ FORCE-CREATE DATE DOCUMENT
+//
+//        //FORCE-CREATE DATE DOCUMENT
+//        Map<String, Object> dateMeta = new HashMap<>();
+//        dateMeta.put("date", orderDate);
+//        dateMeta.put("createdAt", FieldValue.serverTimestamp());
+//
+//        db.collection("purchase_orders")
+//                .document(orderDate)
+//                .set(dateMeta, SetOptions.merge());
+//
+//        String orderId = agentCode + "_" + publication;
+//
+//        DocumentReference orderRef = db
+//                .collection("purchase_orders")
+//                .document(orderDate)
+//                .collection("orders")
+//                .document(orderId);
+//
+//        orderRef.get().addOnSuccessListener(snapshot -> {
+//
+//            if (snapshot.exists()) {
+//                Toast.makeText(this,
+//                        "Order already submitted for " + publication,
+//                        Toast.LENGTH_LONG).show();
+//                return;
+//            }
+//
+//            Map<String, Object> data = new HashMap<>();
+//            data.put("agentCode", agentCode);
+//            data.put("agentName", agentName);
+//            data.put("district", district);
+//            data.put("publication", publication);
+//            data.put("issueDate", issueDate);
+//            data.put("orderDate", orderDate);
+//            data.put("quantity", quantity);
+//            data.put("returnAllowed", returnAllowed);
+//            data.put("status", "submitted");
+//            data.put("submittedAt", FieldValue.serverTimestamp());
+//
+//            orderRef.set(data)
+//                    .addOnSuccessListener(v -> {
+//                        Toast.makeText(this,
+//                                "Order submitted successfully",
+//                                Toast.LENGTH_SHORT).show();
+//                        finish();
+//                    });
+//        });
         Map<String, Object> dateMeta = new HashMap<>();
         dateMeta.put("date", orderDate);
         dateMeta.put("createdAt", FieldValue.serverTimestamp());
 
         db.collection("purchase_orders")
                 .document(orderDate)
-                .set(dateMeta, SetOptions.merge());
+                .set(dateMeta, SetOptions.merge())
+                .addOnSuccessListener(unused -> {
 
-        String orderId = agentCode + "_" + publication;
+                    String orderId = agentCode + "_" + publication;
 
-        DocumentReference orderRef = db
-                .collection("purchase_orders")
-                .document(orderDate)
-                .collection("orders")
-                .document(orderId);
+                    DocumentReference orderRef = db
+                            .collection("purchase_orders")
+                            .document(orderDate)
+                            .collection("orders")
+                            .document(orderId);
 
-        orderRef.get().addOnSuccessListener(snapshot -> {
+                    orderRef.get().addOnSuccessListener(snapshot -> {
 
-            if (snapshot.exists()) {
-                Toast.makeText(this,
-                        "Order already submitted for " + publication,
-                        Toast.LENGTH_LONG).show();
-                return;
-            }
+                        if (snapshot.exists()) {
+                            Toast.makeText(this,
+                                    "Order already submitted for " + publication,
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("agentCode", agentCode);
-            data.put("agentName", agentName);
-            data.put("district", district);
-            data.put("publication", publication);
-            data.put("issueDate", issueDate);
-            data.put("orderDate", orderDate);
-            data.put("quantity", quantity);
-            data.put("returnAllowed", returnAllowed);
-            data.put("status", "submitted");
-            data.put("submittedAt", FieldValue.serverTimestamp());
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("agentCode", agentCode);
+                        data.put("agentName", agentName);
+                        data.put("district", district);
+                        data.put("publication", publication);
+                        data.put("issueDate", issueDate);
+                        data.put("orderDate", orderDate);
+                        data.put("quantity", quantity);
+                        data.put("returnAllowed", returnAllowed);
+                        data.put("status", "submitted");
+                        data.put("submittedAt", FieldValue.serverTimestamp());
 
-            orderRef.set(data)
-                    .addOnSuccessListener(v -> {
-                        Toast.makeText(this,
-                                "Order submitted successfully",
-                                Toast.LENGTH_SHORT).show();
-                        finish();
+                        orderRef.set(data)
+                                .addOnSuccessListener(v -> {
+                                    Toast.makeText(this,
+                                            "Order submitted successfully",
+                                            Toast.LENGTH_SHORT).show();
+                                    finish();
+                                });
                     });
-        });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this,
+                            "Failed to create order date",
+                            Toast.LENGTH_SHORT).show();
+                });
     }
 
     private boolean isOrderCutoffPassed() {
